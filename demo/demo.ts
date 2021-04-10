@@ -8,6 +8,7 @@ function main(){
     const newWindow = new SwitchbackUI.SwitchbackWindow({
         classification: "Switchback",
         title: "Switchback Demo",
+        direction: "HORIZONTAL",
         height: 200,
         minHeight: 100,
         maxHeight: 300,
@@ -24,13 +25,17 @@ function main(){
 
     const btn2:ButtonWidget = SwitchbackUI.SwitchbackWidget.CreateButton("Button 2");
 
+    console.log('Creating Btn3');
+
+    const btn3:ButtonWidget = SwitchbackUI.SwitchbackWidget.CreateButton("Button 3");
+
     console.log('Creating Layout');
 
-    newWindow.addChild(
+    newWindow.addChildren([
         new SwitchbackUI.SwitchbackGroup({
             direction: "VERTICAL",
-            height: "75%",
-            width: "75%"
+            height: "100%",
+            width: "50%"
         })
             .addChild(new SwitchbackUI.SwitchbackWidget({
                 base: btn1,
@@ -39,10 +44,20 @@ function main(){
             }))
             .addChild(new SwitchbackUI.SwitchbackWidget({
                 base: btn2,
-                height: "15%",
-                width: 100
+                height: "25%",
+                width: "50%"
+            })),
+        new SwitchbackUI.SwitchbackGroup({
+            direction: "VERTICAL",
+            height: "100%",
+            width: "50%"
+        })
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: btn3,
+                height: "100%",
+                width: "100%"
             }))
-    );
+    ]);
 
     console.log('Applying Layout');
 

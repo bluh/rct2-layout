@@ -4,8 +4,6 @@ type SwitchbackDirection = "VERTICAL" | "HORIZONTAL";
 /** Describes if a given size is "ABSOLUTE" (pixel-based), or "RELATIVE" (percent of the parent) */
 type SizeType = "ABSOLUTE" | "RELATIVE";
 
-type WidgetType = Widget;
-
 type SwitchbackObject = SwitchbackWidget | SwitchbackGroup;
 
 class UniqueNameGenerator{
@@ -15,6 +13,20 @@ class UniqueNameGenerator{
         const result = (name || "") + this.next;
         this.next += 1;
         return result;
+    }
+}
+
+class BoxModelProps{
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+
+    constructor(top?: number, bottom?: number, left?: number, right?: number){
+        this.top = top || 0;
+        this.bottom = bottom || 0;
+        this.left = left || 0;
+        this.right = right || 0;
     }
 }
 
@@ -39,10 +51,8 @@ export interface SwitchbackWidgetProps{
 
     /**
      * If present, describes the number of pixels surrounding this object.
-     * 
-     * TODO: Should probably be an object with top, bottom, left, and right properties.
      */
-    padding?: number;
+    padding?: BoxModelProps;
 }
 
 /**
@@ -65,7 +75,7 @@ export class SwitchbackWidget{
     /**
      * Pixels of padding around the widget.
      */
-    padding?: number;
+    padding?: BoxModelProps;
 
     /**
      * Describes if the height property is defined as a relative or absolute value.
@@ -109,7 +119,7 @@ export class SwitchbackWidget{
         this.base = props.base;
         this.setHeight(props.height || 0);
         this.setWidth(props.width || 0);
-        this.padding = props.padding;
+        this.padding = props.padding || new BoxModelProps();
     }
 
     setHeight(value: number | string){
@@ -271,9 +281,12 @@ export class SwitchbackGroup extends SwitchbackWidget {
             newWidth = resizedWidget.newWidth;
         }
 
+        newHeight -= (this.padding.top || 0) + (this.padding.bottom || 0);
+        newWidth -= (this.padding.left || 0) + (this.padding.right || 0);
+
         if(this.children){
-            var sequenceX = newX;
-            var sequenceY = newY;
+            var sequenceX = newX + (this.padding.left || 0);
+            var sequenceY = newY + (this.padding.top || 0);;
             this.children.forEach(child => {
                 const newChildSize = child.reactToParentSizeChange(sequenceX, sequenceY, newHeight, newWidth);
                 if(this.direction === "HORIZONTAL"){
@@ -301,6 +314,8 @@ export interface SwitchbackWindowProps extends WindowDesc{
      * Defaults to "VERTICAL"
      */
     direction?: SwitchbackDirection;
+
+    padding?: BoxModelProps;
 }
 
 export class SwitchbackWindow extends SwitchbackGroup{
@@ -316,7 +331,8 @@ export class SwitchbackWindow extends SwitchbackGroup{
         const superProps:SwitchbackGroupProps = {
             direction: props.direction || "VERTICAL",
             width: props.width,
-            height: props.height
+            height: props.height,
+            padding: props.padding || new BoxModelProps(16, 16, 4, 4)
         };
         super(superProps);
         
@@ -344,7 +360,6 @@ export class SwitchbackWindow extends SwitchbackGroup{
             if(this.base.width !== this.baseWidth || this.base.height !== this.baseHeight){
                 this.baseWidth = this.base.width;
                 this.baseHeight = this.base.height;
-                // this.onResize();
                 this.apply();
             }
             this.theirOnUpdate && this.theirOnUpdate();
@@ -379,6 +394,6 @@ export class SwitchbackWindow extends SwitchbackGroup{
                 child.parentWindow = this.base
             });
         }
-        super.reactToParentSizeChange(0, 16, this.baseHeight, this.baseWidth);
+        super.reactToParentSizeChange(0, 0, this.baseHeight, this.baseWidth);
     }
 }

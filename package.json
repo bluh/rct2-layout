@@ -1,0 +1,20 @@
+{
+  "name": "rct2-layout",
+  "version": "1.0.0",
+  "description": "Layout manager for OpenRCT2 windows",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "webpack --config demo/webpack.config.js"
+  },
+  "author": "Joseph Faraci",
+  "license": "MIT",
+  "dependencies": {
+    "@types/openrct2": "^0.3.0",
+    "ts-loader": "^8.1.0",
+    "typescript": "^4.2.4",
+    "typescript-bundle": "^1.0.17",
+    "webpack": "^5.31.2",
+    "webpack-cli": "^4.6.0"
+  }
+}

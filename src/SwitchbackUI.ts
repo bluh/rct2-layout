@@ -16,7 +16,7 @@ class UniqueNameGenerator{
     }
 }
 
-class BoxModelProps{
+class BoxModel{
     top: number;
     bottom: number;
     left: number;
@@ -29,6 +29,21 @@ class BoxModelProps{
         this.right = right || 0;
     }
 }
+
+/**
+ * Used to describe a Widget's margin or padding
+ * @param top The top padding or margin of a Widget
+ * @param bottom The bottom padding or margin of a Widget
+ * @param left The left padding or margin of a Widget
+ * @param right The right padding or margin of a Widget
+ */
+export const boundingBox = (top?: number, bottom?: number, left?: number, right?: number) => new BoxModel(top, bottom, left, right);
+
+
+/**
+ * Describes the default padding on a Group Box widget
+ */
+export const defaultGroupBoxPadding = new BoxModel(12, 4, 4, 4);
 
 /** Describes the properties that can be given to a SwitchbackWidget to initialize it */
 export interface SwitchbackWidgetProps{
@@ -50,13 +65,15 @@ export interface SwitchbackWidgetProps{
     width: number | string;
 
     /**
-     * If present, describes the number of pixels surrounding this object.
+     * If present, describes the number of pixels surrounding the outside of this object.
      */
-    padding?: BoxModelProps;
+    margin?: BoxModel;
 }
 
 /**
  * Wrapper containing a base OpenRCT2 object, which records the position and size details of the object.
+ * 
+ * Interactions with this object will carry down to the underlying base object.
  */
 export class SwitchbackWidget{
     /**
@@ -65,17 +82,16 @@ export class SwitchbackWidget{
      */
     base?: Widget | Window;
 
-    baseName: string;
+    /**
+     * String representing the name of the Widget.
+     * If this Widget wraps a valid OpenRCT2 widget, these names should match.
+     */
+    name: string;
 
     /**
      * The base OpenRCT2 window object this Widget is a part of.
      */
     parentWindow: Window;
-    
-    /**
-     * Pixels of padding around the widget.
-     */
-    padding?: BoxModelProps;
 
     /**
      * Describes if the height property is defined as a relative or absolute value.
@@ -88,40 +104,54 @@ export class SwitchbackWidget{
     widthType: SizeType;
     
     /**
-     * Describes the height of the object either as a relative or absolute value, depending on the value of the heightType property
+     * Describes the height of the Widget either as a relative or absolute value, depending on the value of the heightType property
      */
     height: number;
     
     /**
-     * Describes the width of the object either as a relative or absolute value, depending on the value of the widthType property
+     * Describes the width of the Widget either as a relative or absolute value, depending on the value of the widthType property
      */
     width: number;
     
     /**
-     * Describes the actual height of the base widget object
+     * Describes the actual height of the base Widget object
      */
     baseHeight: number;
     
     /**
-     * Describes the actual height of the base widget object
+     * Describes the actual height of the base Widget object
      */
     baseWidth: number;
 
-    onResize: (this: SwitchbackWidget) => {};
+    /**
+     * If present, describes the number of pixels surrounding the outside of this object.
+     */
+    margin: BoxModel;
+
+    /**
+     * Callback called when the Widget resizes.
+     */
+    onResize: (this: SwitchbackWidget) => void;
 
     constructor(props: SwitchbackWidgetProps){
         if(props.base){
             props.base.name = props.base.name || UniqueNameGenerator.getNext("SW");
-            this.baseName = props.base.name;
+            this.name = props.base.name;
         }else{
-            this.baseName = UniqueNameGenerator.getNext("SWBaseless");
+            this.name = UniqueNameGenerator.getNext("SWBaseless");
         }
         this.base = props.base;
         this.setHeight(props.height || 0);
         this.setWidth(props.width || 0);
-        this.padding = props.padding || new BoxModelProps();
+        this.margin = props.margin || new BoxModel();
     }
 
+    /**
+     * Change the target height of this Widget.
+     * 
+     * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
+     * @param value New height value. Use a number for an absolute size, and "xxx%" for a relative size
+     */
     setHeight(value: number | string){
         if(typeof value === "string"){
             const matches = value.match(/(\d{1,3})%/);
@@ -140,6 +170,12 @@ export class SwitchbackWidget{
         }
     }
 
+    /**
+     * Change the target width of this Widget.
+     * 
+     * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
+     * @param value New width value. Use a number for an absolute size, and "xxx%" for a relative size
+     */
     setWidth(value: number | string){
         if(typeof value === "string"){
             const matches = value.match(/(\d{1,3})%/);
@@ -165,10 +201,10 @@ export class SwitchbackWidget{
         if(!this.base){
             throw Error("Could not get widget: has not been initialized.");
         }
-        if(!this.baseName){
+        if(!this.name){
             throw Error("Could not get widget: widget needs a name to be found.");
         }
-        return this.parentWindow.findWidget(this.baseName);
+        return this.parentWindow.findWidget(this.name);
     }
 
     changeWidgetSize(x: number, y: number, height: number, width: number){
@@ -194,24 +230,16 @@ export class SwitchbackWidget{
         }
 
         if(this.base){
-            this.changeWidgetSize(newX, newY, newHeight, newWidth);
+            this.changeWidgetSize(
+                newX + this.margin.left,
+                newY + this.margin.top,
+                newHeight - (this.margin.top + this.margin.bottom),
+                newWidth - (this.margin.left + this.margin.right));
         }
 
         return {
             newHeight,
             newWidth
-        }
-    }
-
-    static CreateButton(title: string, name?: string){
-        return <ButtonWidget>{
-            type: "button",
-            height: 16,
-            width: 16,
-            x: 16,
-            y: 16,
-            text: title,
-            name: name || UniqueNameGenerator.getNext("SWButton")
         }
     }
 }
@@ -225,11 +253,11 @@ interface SwitchbackGroupProps extends SwitchbackWidgetProps{
     direction: SwitchbackDirection;
 
     /**
-     * If provided, describes the pixels that pad the content within the group
+     * If present, describes the number of pixels surrounding the inside of this object.
      * 
-     * TODO: Should probably be an object with top, bottom, left, and right properties.
+     * This only affects the children of this Group, so childless Groups will be unaffected by this property.
      */
-    margin?: number;
+    padding?: BoxModel;
 }
 
 export class SwitchbackGroup extends SwitchbackWidget {
@@ -237,16 +265,22 @@ export class SwitchbackGroup extends SwitchbackWidget {
      * Direction the group will display children in.
      */
     direction: SwitchbackDirection;
-
-    margin?: number;
-
+    
+    /**
+     * Pixels of padding around this Group.
+     */
+    padding: BoxModel;
+    
+    /**
+     * The children of this Group.
+     */
     children: SwitchbackObject[];
     
     constructor(props: SwitchbackGroupProps){
         super(<SwitchbackWidgetProps> props);
 
         this.direction = props.direction;
-        this.margin = props.margin;
+        this.padding = props.padding || new BoxModel();
         this.children = [];
     }
 
@@ -281,14 +315,14 @@ export class SwitchbackGroup extends SwitchbackWidget {
             newWidth = resizedWidget.newWidth;
         }
 
-        newHeight -= (this.padding.top || 0) + (this.padding.bottom || 0);
-        newWidth -= (this.padding.left || 0) + (this.padding.right || 0);
+        const childrenHeight = newHeight - ((this.padding.top || 0) + (this.padding.bottom || 0));
+        const childrenWidth = newWidth - ((this.padding.left || 0) + (this.padding.right || 0));
 
         if(this.children){
             var sequenceX = newX + (this.padding.left || 0);
             var sequenceY = newY + (this.padding.top || 0);;
             this.children.forEach(child => {
-                const newChildSize = child.reactToParentSizeChange(sequenceX, sequenceY, newHeight, newWidth);
+                const newChildSize = child.reactToParentSizeChange(sequenceX, sequenceY, childrenHeight, childrenWidth);
                 if(this.direction === "HORIZONTAL"){
                     sequenceX += newChildSize.newWidth;
                 }else{
@@ -315,7 +349,7 @@ export interface SwitchbackWindowProps extends WindowDesc{
      */
     direction?: SwitchbackDirection;
 
-    padding?: BoxModelProps;
+    padding?: BoxModel;
 }
 
 export class SwitchbackWindow extends SwitchbackGroup{
@@ -332,7 +366,7 @@ export class SwitchbackWindow extends SwitchbackGroup{
             direction: props.direction || "VERTICAL",
             width: props.width,
             height: props.height,
-            padding: props.padding || new BoxModelProps(16, 16, 4, 4)
+            padding: props.padding || new BoxModel(16, 16, 4, 4)
         };
         super(superProps);
         
@@ -395,5 +429,29 @@ export class SwitchbackWindow extends SwitchbackGroup{
             });
         }
         super.reactToParentSizeChange(0, 0, this.baseHeight, this.baseWidth);
+    }
+}
+
+export function createButton(title: string, name?: string){
+    return <ButtonWidget>{
+        type: "button",
+        height: 16,
+        width: 16,
+        x: 16,
+        y: 16,
+        text: title,
+        name: name || UniqueNameGenerator.getNext("SWButton")
+    }
+}
+
+export function createGroupBox(text?: string, name?: string){
+    return <GroupBoxWidget>{
+        type: "groupbox",
+        text: text,
+        height: 16,
+        width: 16,
+        x: 16,
+        y: 16,
+        name: name || UniqueNameGenerator.getNext("SWGroupBox")
     }
 }

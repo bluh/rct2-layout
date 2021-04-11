@@ -5,57 +5,111 @@ function main(){
         return;
     }
 
+    console.log('Creating Window');
+
     const newWindow = new SwitchbackUI.SwitchbackWindow({
         classification: "Switchback",
         title: "Switchback Demo",
-        direction: "HORIZONTAL",
-        height: 200,
-        minHeight: 100,
-        maxHeight: 300,
-        width: 400,
-        minWidth: 200,
-        maxWidth: 600
+        direction: "VERTICAL",
+        height: 300,
+        minHeight: 200,
+        maxHeight: 400,
+        width: 200,
+        minWidth: 150,
+        maxWidth: 300
     });
 
-    console.log('Creating Btn1');
+    console.log('Creating Widgets');
 
-    const btn1:ButtonWidget = SwitchbackUI.SwitchbackWidget.CreateButton("Button 1");
+    const gBox1 = SwitchbackUI.createGroupBox("Relative Width Buttons:");
 
-    console.log('Creating Btn2');
+    const gBox1_Btn1 = SwitchbackUI.createButton("50%");
 
-    const btn2:ButtonWidget = SwitchbackUI.SwitchbackWidget.CreateButton("Button 2");
+    const gBox1_Btn2 = SwitchbackUI.createButton("50%");
 
-    console.log('Creating Btn3');
+    const gBox2 = SwitchbackUI.createGroupBox("Relative Height Buttons:");
 
-    const btn3:ButtonWidget = SwitchbackUI.SwitchbackWidget.CreateButton("Button 3");
+    const gBox2_Btn1 = SwitchbackUI.createButton("50%");
+
+    const gBox2_Btn2 = SwitchbackUI.createButton("50%");
+
+    const gBox3 = SwitchbackUI.createGroupBox("Padding Example:");
+
+    const gBox3_Btn1 = SwitchbackUI.createButton("Button affected by padding");
+
+    const gBox4 = SwitchbackUI.createGroupBox("Margin Example:");
+
+    const gBox4_Btn1 = SwitchbackUI.createButton("Top margin");
+
+    const gBox4_Btn2 = SwitchbackUI.createButton("Bottom margin");
 
     console.log('Creating Layout');
 
     newWindow.addChildren([
         new SwitchbackUI.SwitchbackGroup({
-            direction: "VERTICAL",
-            height: "100%",
-            width: "50%"
+            base: gBox1,
+            direction: "HORIZONTAL",
+            height: "25%",
+            width: "100%",
+            padding: SwitchbackUI.defaultGroupBoxPadding
         })
             .addChild(new SwitchbackUI.SwitchbackWidget({
-                base: btn1,
-                height: 20,
-                width: "100%"
+                base: gBox1_Btn1,
+                height: "100%",
+                width: "50%"
             }))
             .addChild(new SwitchbackUI.SwitchbackWidget({
-                base: btn2,
-                height: "25%",
+                base: gBox1_Btn2,
+                height: "100%",
                 width: "50%"
             })),
         new SwitchbackUI.SwitchbackGroup({
+            base: gBox2,
             direction: "VERTICAL",
-            height: "100%",
-            width: "50%"
+            height: "25%",
+            width: "100%",
+            padding: SwitchbackUI.defaultGroupBoxPadding
         })
             .addChild(new SwitchbackUI.SwitchbackWidget({
-                base: btn3,
+                base: gBox2_Btn1,
+                height: "50%",
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: gBox2_Btn2,
+                height: "50%",
+                width: "100%"
+            })),
+        new SwitchbackUI.SwitchbackGroup({
+            base: gBox3,
+            direction: "VERTICAL",
+            height: "25%",
+            width: "100%",
+            padding: SwitchbackUI.boundingBox(20, 20, 20, 20)
+        })
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: gBox3_Btn1,
                 height: "100%",
                 width: "100%"
+            })),
+        new SwitchbackUI.SwitchbackGroup({
+            base: gBox4,
+            direction: "HORIZONTAL",
+            height: "25%",
+            width: "100%",
+            padding: SwitchbackUI.defaultGroupBoxPadding
+        })
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: gBox4_Btn1,
+                height: "100%",
+                width: "50%",
+                margin: SwitchbackUI.boundingBox(10, 0, 0, 0)
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: gBox4_Btn2,
+                height: "100%",
+                width: "50%",
+                margin: SwitchbackUI.boundingBox(0, 10, 0, 0)
             }))
     ]);
 

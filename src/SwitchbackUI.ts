@@ -415,8 +415,10 @@ export class SwitchbackWindow extends SwitchbackGroup{
         return result;
     }
 
-    apply(){
-        if(!this.base){
+    open(){
+        if(this.base){
+            this.base.bringToFront();
+        }else{
             const newChildren = this.getChildrenFlat();
             this.base = ui.openWindow({
                 ...this.thisWindowDesc,
@@ -427,8 +429,23 @@ export class SwitchbackWindow extends SwitchbackGroup{
             newChildren.forEach(child => {
                 child.parentWindow = this.base
             });
+            this.apply();
         }
-        super.reactToParentSizeChange(0, 0, this.baseHeight, this.baseWidth);
+    }
+
+    close(){
+        if(this.base){
+            this.base.close();
+            this.base = null;
+        }
+    }
+
+    apply(){
+        if(!this.base){
+            this.open();
+        }else{
+            super.reactToParentSizeChange(0, 0, this.baseHeight, this.baseWidth);
+        }
     }
 }
 

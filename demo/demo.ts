@@ -27,6 +27,8 @@ function main(){
 
     const gBox1_Btn2 = SwitchbackUI.createButton("50%");
 
+    gBox1_Btn1.onClick = () => newWindow.close();
+
     const gBox2 = SwitchbackUI.createGroupBox("Relative Height Buttons:");
 
     const gBox2_Btn1 = SwitchbackUI.createButton("50%");
@@ -116,6 +118,8 @@ function main(){
     console.log('Applying Layout');
 
     newWindow.apply();
+
+    context.setInterval(() => newWindow.open(), 1000);
 
 }
 

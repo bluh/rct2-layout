@@ -1,10 +1,15 @@
 /** Describes the direction of the SwitchbackGroup */ 
 type SwitchbackDirection = "VERTICAL" | "HORIZONTAL";
 
-/** Describes if a given size is "ABSOLUTE" (pixel-based), or "RELATIVE" (percent of the parent) */
-type SizeType = "ABSOLUTE" | "RELATIVE";
-
 type SwitchbackObject = SwitchbackWidget | SwitchbackGroup;
+
+interface SizeProps {
+    absolute?: number;
+
+    relative?: number;
+}
+
+type SizeType = string | number | SizeProps;
 
 class UniqueNameGenerator{
     static next: number = 0;
@@ -17,16 +22,16 @@ class UniqueNameGenerator{
 }
 
 class BoxModel{
-    top: number;
-    bottom: number;
-    left: number;
-    right: number;
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
 
     constructor(top?: number, bottom?: number, left?: number, right?: number){
-        this.top = top || 0;
-        this.bottom = bottom || 0;
-        this.left = left || 0;
-        this.right = right || 0;
+        this.top = top;
+        this.bottom = bottom;
+        this.left = left;
+        this.right = right;
     }
 }
 
@@ -50,19 +55,19 @@ export interface SwitchbackWidgetProps{
     /**
      * If present, the base OpenRCT2 object this Widget will represent.
      * 
-     * If not present, describes a object that does not render (a Group or Spacer)
+     * If not present, this Widget describes a object that does not render (a Group or Spacer)
      */
     base?: Widget;
 
     /**
      * The height of this object, either as a number for an absolute pixel-based size, or a string in the form "[value]%" for a relative percent-based size
      */
-    height: number | string;
+    height: SizeType;
     
     /**
      * The width of this object, either as a number for an absolute pixel-based size, or a string in the form "[value]%" for a relative percent-based size
      */
-    width: number | string;
+    width: SizeType;
 
     /**
      * If present, describes the number of pixels surrounding the outside of this object.
@@ -92,26 +97,16 @@ export class SwitchbackWidget{
      * The base OpenRCT2 window object this Widget is a part of.
      */
     parentWindow: Window;
-
-    /**
-     * Describes if the height property is defined as a relative or absolute value.
-     */
-    heightType: SizeType;
-    
-    /**
-     * Describes if the width property is defined as a relative or absolute value.
-     */
-    widthType: SizeType;
     
     /**
      * Describes the height of the Widget either as a relative or absolute value, depending on the value of the heightType property
      */
-    height: number;
+    height: SizeProps;
     
     /**
      * Describes the width of the Widget either as a relative or absolute value, depending on the value of the widthType property
      */
-    width: number;
+    width: SizeProps;
     
     /**
      * Describes the actual height of the base Widget object
@@ -119,7 +114,7 @@ export class SwitchbackWidget{
     baseHeight: number;
     
     /**
-     * Describes the actual height of the base Widget object
+     * Describes the actual width of the base Widget object
      */
     baseWidth: number;
 
@@ -135,7 +130,7 @@ export class SwitchbackWidget{
 
     constructor(props: SwitchbackWidgetProps){
         if(props.base){
-            props.base.name = props.base.name || UniqueNameGenerator.getNext("SW");
+            props.base.name = props.base.name || UniqueNameGenerator.getNext("SWBase");
             this.name = props.base.name;
         }else{
             this.name = UniqueNameGenerator.getNext("SWBaseless");
@@ -143,16 +138,16 @@ export class SwitchbackWidget{
         this.base = props.base;
         this.setHeight(props.height || 0);
         this.setWidth(props.width || 0);
-        this.margin = props.margin || new BoxModel();
+        this.margin = props.margin || new BoxModel(0, 0, 0, 0);
     }
 
     /**
      * Change the target height of this Widget.
      * 
      * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
-     * @param value New height value. Use a number for an absolute size, and "xxx%" for a relative size
+     * @param value New height value. Use a number for an absolute size, "xxx%" for a relative size, or a combination described by the SizeProps type.
      */
-    setHeight(value: number | string){
+    setHeight(value: number | string | SizeProps){
         if(typeof value === "string"){
             const matches = value.match(/(\d{1,3})%/);
 
@@ -162,10 +157,16 @@ export class SwitchbackWidget{
 
             const parsedValue = parseInt(matches[1]);
 
-            this.heightType = "RELATIVE";
-            this.height = parsedValue;
+            this.height = {
+                absolute: null,
+                relative: parsedValue
+            }
+        }else if(typeof value === "number"){
+            this.height = {
+                absolute: value,
+                relative: null
+            }
         }else{
-            this.heightType = "ABSOLUTE";
             this.height = value;
         }
     }
@@ -174,9 +175,9 @@ export class SwitchbackWidget{
      * Change the target width of this Widget.
      * 
      * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
-     * @param value New width value. Use a number for an absolute size, and "xxx%" for a relative size
+     * @param value New width value. Use a number for an absolute size, "xxx%" for a relative size, or a combination described by the SizeProps type.
      */
-    setWidth(value: number | string){
+    setWidth(value: number | string | SizeProps){
         if(typeof value === "string"){
             const matches = value.match(/(\d{1,3})%/);
 
@@ -186,10 +187,16 @@ export class SwitchbackWidget{
 
             const parsedValue = parseInt(matches[1]);
 
-            this.widthType = "RELATIVE";
-            this.width = parsedValue;
+            this.width = {
+                absolute: null,
+                relative: parsedValue
+            }
+        }else if(typeof value === "number"){
+            this.width = {
+                absolute: value,
+                relative: null
+            }
         }else{
-            this.widthType = "ABSOLUTE";
             this.width = value;
         }
     }
@@ -216,25 +223,30 @@ export class SwitchbackWidget{
     }
 
     reactToParentSizeChange(newX: number, newY: number, parentHeight: number, parentWidth: number){
-        var newHeight:number, newWidth:number;
-        
-        if(this.heightType === "ABSOLUTE"){
-            newHeight = this.height;
-        }else{
-            newHeight = parentHeight * (this.height / 100.0);
+        var newHeight:number = 0;
+        var newWidth:number = 0;
+
+        if(this.height.relative){
+            newHeight = parentHeight * (this.height.relative / 100.0);
         }
-        if(this.widthType === "ABSOLUTE"){
-            newWidth = this.width;
-        }else{
-            newWidth = parentWidth * (this.width / 100.0);
+        if(this.height.absolute){
+            newHeight += this.height.absolute
+        }
+        
+
+        if(this.width.relative){
+            newWidth = parentWidth * (this.width.relative / 100.0);
+        }
+        if(this.width.absolute){
+            newWidth += this.width.absolute
         }
 
         if(this.base){
             this.changeWidgetSize(
-                newX + this.margin.left,
-                newY + this.margin.top,
-                newHeight - (this.margin.top + this.margin.bottom),
-                newWidth - (this.margin.left + this.margin.right));
+                newX + this.margin.left || 0,
+                newY + this.margin.top || 0,
+                newHeight - ((this.margin.top || 0) + (this.margin.bottom || 0)),
+                newWidth - ((this.margin.left || 0) + (this.margin.right || 0)));
         }
 
         return {
@@ -408,8 +420,8 @@ export class SwitchbackWindow extends SwitchbackGroup{
         const result: SwitchbackObject[] = [];
         children.forEach(child => {
             result.push(child);
-            if(child instanceof SwitchbackGroup){
-                child.children && result.push(...this.getChildrenFlatRecurse(child.children));
+            if(child instanceof SwitchbackGroup && child.children){
+                result.push(...this.getChildrenFlatRecurse(child.children));
             }
         });
         return result;

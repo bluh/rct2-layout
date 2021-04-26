@@ -21,34 +21,51 @@ class UniqueNameGenerator{
     }
 }
 
-class BoxModel{
+interface BoxModelProps{
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+}
+
+/**
+ * Used to describe a Widget's margin or padding
+ */
+export class BoundingBox implements BoxModelProps{
     top?: number;
     bottom?: number;
     left?: number;
     right?: number;
 
-    constructor(top?: number, bottom?: number, left?: number, right?: number){
-        this.top = top;
-        this.bottom = bottom;
-        this.left = left;
-        this.right = right;
+    constructor(props: BoxModelProps){
+        this.top = props.top;
+        this.bottom = props.bottom;
+        this.left = props.left;
+        this.right = props.right;
+    }
+
+    getTop(){
+        return this.top || 0;
+    }
+
+    getBottom(){
+        return this.bottom || 0;
+    }
+
+    getLeft(){
+        return this.left || 0;
+    }
+
+    getRight(){
+        return this.right || 0;
     }
 }
-
-/**
- * Used to describe a Widget's margin or padding
- * @param top The top padding or margin of a Widget
- * @param bottom The bottom padding or margin of a Widget
- * @param left The left padding or margin of a Widget
- * @param right The right padding or margin of a Widget
- */
-export const boundingBox = (top?: number, bottom?: number, left?: number, right?: number) => new BoxModel(top, bottom, left, right);
 
 
 /**
  * Describes the default padding on a Group Box widget
  */
-export const defaultGroupBoxPadding = new BoxModel(12, 4, 4, 4);
+export const defaultGroupBoxPadding = new BoundingBox({top: 12, bottom: 4, left: 4, right: 4});
 
 /** Describes the properties that can be given to a SwitchbackWidget to initialize it */
 export interface SwitchbackWidgetProps{
@@ -72,7 +89,7 @@ export interface SwitchbackWidgetProps{
     /**
      * If present, describes the number of pixels surrounding the outside of this object.
      */
-    margin?: BoxModel;
+    margin?: BoundingBox;
 }
 
 /**
@@ -121,7 +138,7 @@ export class SwitchbackWidget{
     /**
      * If present, describes the number of pixels surrounding the outside of this object.
      */
-    margin: BoxModel;
+    margin: BoundingBox;
 
     /**
      * Callback called when the Widget resizes.
@@ -138,7 +155,7 @@ export class SwitchbackWidget{
         this.base = props.base;
         this.setHeight(props.height || 0);
         this.setWidth(props.width || 0);
-        this.margin = props.margin || new BoxModel(0, 0, 0, 0);
+        this.margin = props.margin || new BoundingBox({});
     }
 
     /**
@@ -243,10 +260,10 @@ export class SwitchbackWidget{
 
         if(this.base){
             this.changeWidgetSize(
-                newX + this.margin.left || 0,
-                newY + this.margin.top || 0,
-                newHeight - ((this.margin.top || 0) + (this.margin.bottom || 0)),
-                newWidth - ((this.margin.left || 0) + (this.margin.right || 0)));
+                newX + this.margin.getLeft(),
+                newY + this.margin.getTop(),
+                newHeight - (this.margin.getTop() + this.margin.getBottom()),
+                newWidth - (this.margin.getLeft() + this.margin.getRight()));
         }
 
         return {
@@ -269,7 +286,7 @@ interface SwitchbackGroupProps extends SwitchbackWidgetProps{
      * 
      * This only affects the children of this Group, so childless Groups will be unaffected by this property.
      */
-    padding?: BoxModel;
+    padding?: BoundingBox;
 }
 
 export class SwitchbackGroup extends SwitchbackWidget {
@@ -281,7 +298,7 @@ export class SwitchbackGroup extends SwitchbackWidget {
     /**
      * Pixels of padding around this Group.
      */
-    padding: BoxModel;
+    padding: BoundingBox;
     
     /**
      * The children of this Group.
@@ -292,7 +309,7 @@ export class SwitchbackGroup extends SwitchbackWidget {
         super(<SwitchbackWidgetProps> props);
 
         this.direction = props.direction;
-        this.padding = props.padding || new BoxModel();
+        this.padding = props.padding || new BoundingBox({});
         this.children = [];
     }
 
@@ -327,12 +344,12 @@ export class SwitchbackGroup extends SwitchbackWidget {
             newWidth = resizedWidget.newWidth;
         }
 
-        const childrenHeight = newHeight - ((this.padding.top || 0) + (this.padding.bottom || 0));
-        const childrenWidth = newWidth - ((this.padding.left || 0) + (this.padding.right || 0));
+        const childrenHeight = newHeight - (this.padding.getTop() + this.padding.getBottom());
+        const childrenWidth = newWidth - (this.padding.getLeft() + this.padding.getRight());
 
         if(this.children){
-            var sequenceX = newX + (this.padding.left || 0);
-            var sequenceY = newY + (this.padding.top || 0);;
+            var sequenceX = newX + this.padding.getLeft();
+            var sequenceY = newY + this.padding.getTop();
             this.children.forEach(child => {
                 const newChildSize = child.reactToParentSizeChange(sequenceX, sequenceY, childrenHeight, childrenWidth);
                 if(this.direction === "HORIZONTAL"){
@@ -361,7 +378,7 @@ export interface SwitchbackWindowProps extends WindowDesc{
      */
     direction?: SwitchbackDirection;
 
-    padding?: BoxModel;
+    padding?: BoundingBox;
 }
 
 export class SwitchbackWindow extends SwitchbackGroup{
@@ -378,7 +395,7 @@ export class SwitchbackWindow extends SwitchbackGroup{
             direction: props.direction || "VERTICAL",
             width: props.width,
             height: props.height,
-            padding: props.padding || new BoxModel(16, 16, 4, 4)
+            padding: props.padding || new BoundingBox({top: 16, bottom: 16, left: 4, right: 4})
         };
         super(superProps);
         
@@ -461,15 +478,47 @@ export class SwitchbackWindow extends SwitchbackGroup{
     }
 }
 
+const defaultWidgetSize = {
+    height: 16,
+    width: 16,
+    x: 0,
+    y: 0,
+}
+
 export function createButton(title: string, name?: string){
     return <ButtonWidget>{
         type: "button",
-        height: 16,
-        width: 16,
-        x: 16,
-        y: 16,
         text: title,
-        name: name || UniqueNameGenerator.getNext("SWButton")
+        name: name || UniqueNameGenerator.getNext("SWButton"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createCheckbox(text?: string, name?: string){
+    return <CheckboxWidget>{
+        type: "checkbox",
+        text: text,
+        name: name || UniqueNameGenerator.getNext("SWCheckbox"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createColorPicker(color?: number, name?: string){
+    return <ColourPickerWidget>{
+        type: "colourpicker",
+        colour: color,
+        name: name || UniqueNameGenerator.getNext("SWColorPicker"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createDropDown(items?: string[], selectedIndex?: number, name?: string){
+    return <DropdownWidget>{
+        type: "dropdown",
+        items: items,
+        selectedIndex: selectedIndex,
+        name: name || UniqueNameGenerator.getNext("SWDropDown"),
+        ...defaultWidgetSize
     }
 }
 
@@ -477,10 +526,59 @@ export function createGroupBox(text?: string, name?: string){
     return <GroupBoxWidget>{
         type: "groupbox",
         text: text,
-        height: 16,
-        width: 16,
-        x: 16,
-        y: 16,
-        name: name || UniqueNameGenerator.getNext("SWGroupBox")
+        name: name || UniqueNameGenerator.getNext("SWGroupBox"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createLabel(text?: string, textAlign?: TextAlignment, name?: string){
+    return <LabelWidget>{
+        type: "label",
+        text: text,
+        textAlign: textAlign,
+        name: name || UniqueNameGenerator.getNext("SWLabel"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createListview(scrollbars?: ScrollbarType, isStriped?: boolean, showColumnHeaders?: boolean, columns?: ListViewColumn[], items?: string[] | ListViewItem[], selectedCell?: RowColumn, canSelect?: boolean, name?: string){
+    return <ListView>{
+        type: "listview",
+        scrollbars: scrollbars,
+        isStriped: isStriped,
+        showColumnHeaders: showColumnHeaders,
+        columns: columns,
+        items: items,
+        selectedCell: selectedCell,
+        canSelect: canSelect,
+        name: name || UniqueNameGenerator.getNext("SWListview"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createSpinner(text?: string, name?: string){
+    return <SpinnerWidget>{
+        type: "spinner",
+        text: text,
+        name: name || UniqueNameGenerator.getNext("SWSpinner"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createTextBox(text?: string, name?: string){
+    return <TextBoxWidget>{
+        type: "textbox",
+        text: text,
+        name: name || UniqueNameGenerator.getNext("SWTextBox"),
+        ...defaultWidgetSize
+    }
+}
+
+export function createViewport(viewport?: Viewport, name?: string){
+    return <ViewportWidget>{
+        type: "viewport",
+        viewport: viewport,
+        name: name || UniqueNameGenerator.getNext("SWViewport"),
+        ...defaultWidgetSize
     }
 }

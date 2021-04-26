@@ -55,9 +55,9 @@ function main(){
                 relative: 100,
                 absolute: -75
             },
-            padding: {
-                right: 10
-            }
+            padding: new SwitchbackUI.BoundingBox({
+                right: 4
+            })
         })
             .addChildren([
                 new SwitchbackUI.SwitchbackGroup({
@@ -102,7 +102,7 @@ function main(){
                     direction: "VERTICAL",
                     height: "25%",
                     width: "100%",
-                    padding: SwitchbackUI.boundingBox(20, 20, 20, 20)
+                    padding: new SwitchbackUI.BoundingBox({top: 20, bottom: 20, left: 20, right: 20})
                 })
                     .addChild(new SwitchbackUI.SwitchbackWidget({
                         base: gBox3_Btn1,
@@ -120,13 +120,13 @@ function main(){
                         base: gBox4_Btn1,
                         height: "100%",
                         width: "50%",
-                        margin: SwitchbackUI.boundingBox(10, 0, 0, 0)
+                        margin: new SwitchbackUI.BoundingBox({top: 10, bottom: 0, left: 0, right: 0})
                     }))
                     .addChild(new SwitchbackUI.SwitchbackWidget({
                         base: gBox4_Btn2,
                         height: "100%",
                         width: "50%",
-                        margin: SwitchbackUI.boundingBox(0, 10, 0, 0)
+                        margin: new SwitchbackUI.BoundingBox(({top: 0, bottom: 10, left: 0, right: 0}))
                     }))
             ]),
         new SwitchbackUI.SwitchbackGroup({
@@ -136,13 +136,67 @@ function main(){
             width: 75,
             padding: SwitchbackUI.defaultGroupBoxPadding
         })
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createButton("Button"),
+                height: 20,
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createCheckbox("Checkbox"),
+                height: 20,
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackGroup({
+                direction: "HORIZONTAL",
+                height: 16,
+                width: "100%"
+            })
+                .addChild(new SwitchbackUI.SwitchbackWidget({
+                    base: SwitchbackUI.createColorPicker(0xFF00FF),
+                    height: 16,
+                    width: 16
+                }))
+                .addChild(new SwitchbackUI.SwitchbackWidget({
+                    base: SwitchbackUI.createLabel("Label", "left"),
+                    height: 16,
+                    width: {
+                        absolute: -16,
+                        relative: 100
+                    }
+                })))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createDropDown(["Dropdown", "-----", "Item 1", "Item 2"], 0),
+                height: 16,
+                width: "100%",
+                margin: new SwitchbackUI.BoundingBox({
+                    bottom: 2
+                })
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createSpinner("Spinner"),
+                height: 16,
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createTextBox("Text Box"),
+                height: 16,
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createListview("vertical", true, true, [{header: "Header 1"}], ["Item 1", "Item 2", "Item 3"]),
+                height: 50,
+                width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackWidget({
+                base: SwitchbackUI.createViewport(ui.mainViewport),
+                height: 30,
+                width: "100%"
+            }))
     ]);
 
     console.log('Applying Layout');
 
     newWindow.apply();
-
-    // context.setInterval(() => newWindow.open(), 1000);
 
 }
 

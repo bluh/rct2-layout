@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "webpack --config demo/webpack.config.js --env production"
+    "demo": "webpack --config demo/webpack.config.js --env production",
+    "demo-dev": "webpack --config demo/webpack.config.js",
+    "demo-jsx": "webpack --config demo/webpack.config.js --entry ./demo/demo-jsx.tsx"
   },
   "author": "Joseph Faraci",
   "license": "MIT",

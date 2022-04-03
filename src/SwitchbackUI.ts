@@ -273,7 +273,7 @@ export class SwitchbackWidget{
     }
 }
 
-interface SwitchbackGroupProps extends SwitchbackWidgetProps{
+export interface SwitchbackGroupProps extends SwitchbackWidgetProps{
     /**
      * Direction this Group is going in.
      * 

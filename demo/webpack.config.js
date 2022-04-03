@@ -1,8 +1,8 @@
 const path = require('path');
 
-module.exports = {
+module.exports = (env) => ({
   entry: './demo/demo.ts',
-  mode: "development",
+  mode: env.production ? "production" : "development",
   module: {
     rules: [
       {
@@ -20,4 +20,4 @@ module.exports = {
     filename: 'demo.js',
     path: path.resolve(__dirname, 'dist'),
   },
-};
+});

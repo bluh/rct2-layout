@@ -541,7 +541,7 @@ export function createLabel(text?: string, textAlign?: TextAlignment, name?: str
     }
 }
 
-export function createListview(scrollbars?: ScrollbarType, isStriped?: boolean, showColumnHeaders?: boolean, columns?: ListViewColumn[], items?: string[] | ListViewItem[], selectedCell?: RowColumn, canSelect?: boolean, name?: string){
+export function createListView(scrollbars?: ScrollbarType, isStriped?: boolean, showColumnHeaders?: boolean, columns?: ListViewColumn[], items?: string[] | ListViewItem[], selectedCell?: RowColumn, canSelect?: boolean, name?: string){
     return <ListView>{
         type: "listview",
         scrollbars: scrollbars,
@@ -551,7 +551,7 @@ export function createListview(scrollbars?: ScrollbarType, isStriped?: boolean, 
         items: items,
         selectedCell: selectedCell,
         canSelect: canSelect,
-        name: name || UniqueNameGenerator.getNext("SWListview"),
+        name: name || UniqueNameGenerator.getNext("SWListView"),
         ...defaultWidgetSize
     }
 }

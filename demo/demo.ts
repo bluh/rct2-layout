@@ -183,7 +183,7 @@ function main(){
                 width: "100%"
             }))
             .addChild(new SwitchbackUI.SwitchbackWidget({
-                base: SwitchbackUI.createListview("vertical", true, true, [{header: "Header 1"}], ["Item 1", "Item 2", "Item 3"]),
+                base: SwitchbackUI.createListView("vertical", true, true, [{header: "Header 1"}], ["Item 1", "Item 2", "Item 3"]),
                 height: 50,
                 width: "100%"
             }))

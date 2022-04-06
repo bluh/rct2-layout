@@ -21,12 +21,12 @@ function main() {
         <Checkbox {...defaultWidgetProps}>Checkbox</Checkbox>,
         <Group direction="HORIZONTAL" {...defaultWidgetProps}>
             <ColorPicker height="100%" width={16} colour={27} onChange={(color) => console.log(color)} />
-            <Label height="100%" width={{ absolute: 100, relative: -16}}>Label</Label>
+            <Label height="100%" width={{ absolute: 100, relative: -16 }}>Label</Label>
         </Group>,
         <DropDown {...defaultWidgetProps} items={["Dropdown", "-----", "Item 1", "Item 2"]} selectedIndex={0} />,
         <Spinner {...defaultWidgetProps} text="Spinner" />,
         <TextBox {...defaultWidgetProps} ref={textBoxRef}>Text Box</TextBox>,
-        <ListView {...defaultWidgetProps} height={50} scrollbars="vertical" isStriped showColumnHeaders columns={[{header: "Header 1"}]} items={["Item 1", "Item 2", "Item 3"]} />,
+        <ListView {...defaultWidgetProps} height={50} scrollbars="vertical" isStriped showColumnHeaders columns={[{ header: "Header 1" }]} items={["Item 1", "Item 2", "Item 3"]} />,
         <Viewport {...defaultWidgetProps} height={30} />
     ]
 

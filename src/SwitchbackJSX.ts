@@ -9,7 +9,7 @@ class SwitchbackRef<Type extends Widget> {
         this.widget = null;
     }
 
-    setCurrent(next: SwitchbackUI.SwitchbackWidget){
+    setCurrent(next: SwitchbackUI.SwitchbackWidget) {
         this.widget = next;
     }
 
@@ -17,7 +17,7 @@ class SwitchbackRef<Type extends Widget> {
      * Gets the current object this ref is referring to. Calls "getWidget" on the respective Widget, which returns the Widget directly from the parent Window, allowing for reading & writing.
      */
     getCurrent(): Type {
-        if(!this.current){
+        if (!this.current) {
             this.current = this.widget.getWidget() as Type;
         }
         return this.current;
@@ -125,7 +125,7 @@ function createWidget<Type extends Widget>(props: WidgetProps<Type>, type: Widge
         type
     };
     const sbWidget = Widget(props, newWidget);
-    if(props.ref){
+    if (props.ref) {
         props.ref.setCurrent(sbWidget);
     }
     return sbWidget;
@@ -179,21 +179,21 @@ export function Label(props: WidgetProps<LabelWidget>, children: any[]): Switchb
 /**
  * Creates a new SwitchbackWidget with a ListView as the base.
  */
- export function ListView(props: WidgetProps<ListView>, children: any[]): SwitchbackUI.SwitchbackWidget {
+export function ListView(props: WidgetProps<ListView>, children: any[]): SwitchbackUI.SwitchbackWidget {
     return createWidget<ListView>(props, "listview");
 }
 
 /**
  * Creates a new SwitchbackWidget with a Spinner as the base.
  */
- export function Spinner(props: WidgetProps<SpinnerWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+export function Spinner(props: WidgetProps<SpinnerWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
     return createWidget<SpinnerWidget>(props, "spinner");
 }
 
 /**
  * Creates a new SwitchbackWidget with a TextBox as the base.
  */
- export function TextBox(props: WidgetProps<TextBoxWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+export function TextBox(props: WidgetProps<TextBoxWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
     props.text = getText(children, props.text);
     return createWidget<TextBoxWidget>(props, "textbox");
 }
@@ -201,7 +201,7 @@ export function Label(props: WidgetProps<LabelWidget>, children: any[]): Switchb
 /**
  * Creates a new SwitchbackWidget with a Viewport as the base.
  */
- export function Viewport(props: WidgetProps<ViewportWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+export function Viewport(props: WidgetProps<ViewportWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
     return createWidget<ViewportWidget>(props, "viewport");
 }
 

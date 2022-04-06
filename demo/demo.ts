@@ -1,7 +1,7 @@
 import * as SwitchbackUI from "../src/SwitchbackUI";
 
-function main(){
-    if(!ui){
+function main() {
+    if (!ui) {
         return;
     }
 
@@ -102,7 +102,7 @@ function main(){
                     direction: "VERTICAL",
                     height: "25%",
                     width: "100%",
-                    padding: new SwitchbackUI.BoundingBox({top: 20, bottom: 20, left: 20, right: 20})
+                    padding: new SwitchbackUI.BoundingBox({ top: 20, bottom: 20, left: 20, right: 20 })
                 })
                     .addChild(new SwitchbackUI.SwitchbackWidget({
                         base: gBox3_Btn1,
@@ -120,13 +120,13 @@ function main(){
                         base: gBox4_Btn1,
                         height: "100%",
                         width: "50%",
-                        margin: new SwitchbackUI.BoundingBox({top: 10, bottom: 0, left: 0, right: 0})
+                        margin: new SwitchbackUI.BoundingBox({ top: 10, bottom: 0, left: 0, right: 0 })
                     }))
                     .addChild(new SwitchbackUI.SwitchbackWidget({
                         base: gBox4_Btn2,
                         height: "100%",
                         width: "50%",
-                        margin: new SwitchbackUI.BoundingBox(({top: 0, bottom: 10, left: 0, right: 0}))
+                        margin: new SwitchbackUI.BoundingBox(({ top: 0, bottom: 10, left: 0, right: 0 }))
                     }))
             ]),
         new SwitchbackUI.SwitchbackGroup({
@@ -183,7 +183,7 @@ function main(){
                 width: "100%"
             }))
             .addChild(new SwitchbackUI.SwitchbackWidget({
-                base: SwitchbackUI.createListView("vertical", true, true, [{header: "Header 1"}], ["Item 1", "Item 2", "Item 3"]),
+                base: SwitchbackUI.createListView("vertical", true, true, [{ header: "Header 1" }], ["Item 1", "Item 2", "Item 3"]),
                 height: 50,
                 width: "100%"
             }))

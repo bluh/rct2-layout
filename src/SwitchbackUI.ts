@@ -1,4 +1,4 @@
-/** Describes the direction of the SwitchbackGroup */ 
+/** Describes the direction of the SwitchbackGroup */
 type SwitchbackDirection = "VERTICAL" | "HORIZONTAL";
 
 type SwitchbackObject = SwitchbackWidget | SwitchbackGroup;
@@ -11,17 +11,17 @@ interface SizeProps {
 
 type SizeType = string | number | SizeProps;
 
-class UniqueNameGenerator{
+class UniqueNameGenerator {
     static next: number = 0;
 
-    static getNext(name?:string){
+    static getNext(name?: string) {
         const result = (name || "") + this.next;
         this.next += 1;
         return result;
     }
 }
 
-interface BoxModelProps{
+interface BoxModelProps {
     top?: number;
     bottom?: number;
     left?: number;
@@ -31,32 +31,32 @@ interface BoxModelProps{
 /**
  * Used to describe a Widget's margin or padding
  */
-export class BoundingBox implements BoxModelProps{
+export class BoundingBox implements BoxModelProps {
     top?: number;
     bottom?: number;
     left?: number;
     right?: number;
 
-    constructor(props: BoxModelProps){
+    constructor(props: BoxModelProps) {
         this.top = props.top;
         this.bottom = props.bottom;
         this.left = props.left;
         this.right = props.right;
     }
 
-    getTop(){
+    getTop() {
         return this.top || 0;
     }
 
-    getBottom(){
+    getBottom() {
         return this.bottom || 0;
     }
 
-    getLeft(){
+    getLeft() {
         return this.left || 0;
     }
 
-    getRight(){
+    getRight() {
         return this.right || 0;
     }
 }
@@ -65,10 +65,10 @@ export class BoundingBox implements BoxModelProps{
 /**
  * Describes the default padding on a Group Box widget
  */
-export const defaultGroupBoxPadding = new BoundingBox({top: 12, bottom: 4, left: 4, right: 4});
+export const defaultGroupBoxPadding = new BoundingBox({ top: 12, bottom: 4, left: 4, right: 4 });
 
 /** Describes the properties that can be given to a SwitchbackWidget to initialize it */
-export interface SwitchbackWidgetProps{
+export interface SwitchbackWidgetProps {
     /**
      * If present, the base OpenRCT2 object this Widget will represent.
      * 
@@ -80,7 +80,7 @@ export interface SwitchbackWidgetProps{
      * The height of this object, either as a number for an absolute pixel-based size, or a string in the form "[value]%" for a relative percent-based size
      */
     height: SizeType;
-    
+
     /**
      * The width of this object, either as a number for an absolute pixel-based size, or a string in the form "[value]%" for a relative percent-based size
      */
@@ -97,7 +97,7 @@ export interface SwitchbackWidgetProps{
  * 
  * Interactions with this object will carry down to the underlying base object.
  */
-export class SwitchbackWidget{
+export class SwitchbackWidget {
     /**
      * The base OpenRCT2 object this Widget represents.
      * SwitchbackWidget with an empty base are either a Group (if the object has children) or a Spacer (if there are no children)
@@ -116,22 +116,22 @@ export class SwitchbackWidget{
      * The base OpenRCT2 window object this Widget is a part of.
      */
     parentWindow: Window;
-    
+
     /**
      * Describes the height of the Widget either as a relative or absolute value, depending on the value of the heightType property
      */
     height: SizeProps;
-    
+
     /**
      * Describes the width of the Widget either as a relative or absolute value, depending on the value of the widthType property
      */
     width: SizeProps;
-    
+
     /**
      * Describes the actual height of the base Widget object
      */
     baseHeight: number;
-    
+
     /**
      * Describes the actual width of the base Widget object
      */
@@ -147,11 +147,11 @@ export class SwitchbackWidget{
      */
     onResize: (this: SwitchbackWidget) => void;
 
-    constructor(props: SwitchbackWidgetProps){
-        if(props.base){
+    constructor(props: SwitchbackWidgetProps) {
+        if (props.base) {
             props.base.name = props.base.name || UniqueNameGenerator.getNext("SWBase");
             this.name = props.base.name;
-        }else{
+        } else {
             this.name = UniqueNameGenerator.getNext("SWBaseless");
         }
         this.base = props.base;
@@ -166,11 +166,11 @@ export class SwitchbackWidget{
      * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
      * @param value New height value. Use a number for an absolute size, "xxx%" for a relative size, or a combination described by the SizeProps type.
      */
-    setHeight(value: number | string | SizeProps){
-        if(typeof value === "string"){
+    setHeight(value: number | string | SizeProps) {
+        if (typeof value === "string") {
             const matches = value.match(/(\d{1,3})%/);
 
-            if(!matches || matches.length === 0){
+            if (!matches || matches.length === 0) {
                 throw TypeError(`Height value expected a number or a string in the form of "[value]%" (where [value] is a number), but got ${value}.`);
             }
 
@@ -180,12 +180,12 @@ export class SwitchbackWidget{
                 absolute: null,
                 relative: parsedValue
             }
-        }else if(typeof value === "number"){
+        } else if (typeof value === "number") {
             this.height = {
                 absolute: value,
                 relative: null
             }
-        }else{
+        } else {
             this.height = value;
         }
     }
@@ -196,11 +196,11 @@ export class SwitchbackWidget{
      * This won't actually change the size of the Widget until apply() is called on the parent Window to recalculate the layout.
      * @param value New width value. Use a number for an absolute size, "xxx%" for a relative size, or a combination described by the SizeProps type.
      */
-    setWidth(value: number | string | SizeProps){
-        if(typeof value === "string"){
+    setWidth(value: number | string | SizeProps) {
+        if (typeof value === "string") {
             const matches = value.match(/(\d{1,3})%/);
 
-            if(!matches || matches.length === 0){
+            if (!matches || matches.length === 0) {
                 throw TypeError(`Width value expected a number or a string in the form of "[value]%" (where [value] is a number), but got ${value}.`);
             }
 
@@ -210,25 +210,25 @@ export class SwitchbackWidget{
                 absolute: null,
                 relative: parsedValue
             }
-        }else if(typeof value === "number"){
+        } else if (typeof value === "number") {
             this.width = {
                 absolute: value,
                 relative: null
             }
-        }else{
+        } else {
             this.width = value;
         }
     }
 
-    getWidget(){
-        if(!this.windowBase){
-            if(!this.parentWindow){
+    getWidget() {
+        if (!this.windowBase) {
+            if (!this.parentWindow) {
                 throw Error("Could not get widget: widget has not been assigned to a window.");
             }
-            if(!this.base){
+            if (!this.base) {
                 throw Error("Could not get widget: has not been initialized.");
             }
-            if(!this.name){
+            if (!this.name) {
                 throw Error("Could not get widget: widget needs a name to be found.");
             }
             this.windowBase = this.parentWindow.findWidget(this.name);
@@ -236,7 +236,7 @@ export class SwitchbackWidget{
         return this.windowBase;
     }
 
-    changeWidgetSize(x: number, y: number, height: number, width: number){
+    changeWidgetSize(x: number, y: number, height: number, width: number) {
         const widget = this.getWidget();
         widget.x = x;
         widget.y = y;
@@ -244,26 +244,26 @@ export class SwitchbackWidget{
         widget.width = width;
     }
 
-    reactToParentSizeChange(newX: number, newY: number, parentHeight: number, parentWidth: number){
-        var newHeight:number = 0;
-        var newWidth:number = 0;
+    reactToParentSizeChange(newX: number, newY: number, parentHeight: number, parentWidth: number) {
+        var newHeight: number = 0;
+        var newWidth: number = 0;
 
-        if(this.height.relative){
+        if (this.height.relative) {
             newHeight = parentHeight * (this.height.relative / 100.0);
         }
-        if(this.height.absolute){
+        if (this.height.absolute) {
             newHeight += this.height.absolute
         }
-        
 
-        if(this.width.relative){
+
+        if (this.width.relative) {
             newWidth = parentWidth * (this.width.relative / 100.0);
         }
-        if(this.width.absolute){
+        if (this.width.absolute) {
             newWidth += this.width.absolute
         }
 
-        if(this.base){
+        if (this.base) {
             this.changeWidgetSize(
                 newX + this.margin.getLeft(),
                 newY + this.margin.getTop(),
@@ -278,7 +278,7 @@ export class SwitchbackWidget{
     }
 }
 
-export interface SwitchbackGroupProps extends SwitchbackWidgetProps{
+export interface SwitchbackGroupProps extends SwitchbackWidgetProps {
     /**
      * Direction this Group is going in.
      * 
@@ -299,19 +299,19 @@ export class SwitchbackGroup extends SwitchbackWidget {
      * Direction the group will display children in.
      */
     direction: SwitchbackDirection;
-    
+
     /**
      * Pixels of padding around this Group.
      */
     padding: BoundingBox;
-    
+
     /**
      * The children of this Group.
      */
     children: SwitchbackObject[];
-    
-    constructor(props: SwitchbackGroupProps){
-        super(<SwitchbackWidgetProps> props);
+
+    constructor(props: SwitchbackGroupProps) {
+        super(<SwitchbackWidgetProps>props);
 
         this.direction = props.direction;
         this.padding = props.padding || new BoundingBox({});
@@ -323,7 +323,7 @@ export class SwitchbackGroup extends SwitchbackWidget {
      * @param child The SwitchbackGroup or SwitchbackWidget to add
      * @returns The SwitchbackGroup, allowing for chaining
      */
-    addChild(child: SwitchbackObject){
+    addChild(child: SwitchbackObject) {
         this.children.push(child);
         return this;
     }
@@ -333,17 +333,17 @@ export class SwitchbackGroup extends SwitchbackWidget {
      * @param children The array of SwitchbackGroups or SwitchbackWidgets to add
      * @returns The SwitchbackGroup, allowing for chaining
      */
-    addChildren(children: SwitchbackObject[]){
+    addChildren(children: SwitchbackObject[]) {
         this.children.push(...children);
         return this;
     }
 
-    reactToParentSizeChange(newX: number, newY: number, parentHeight: number, parentWidth: number){
-        var newHeight:number, newWidth:number;
-        if(this instanceof SwitchbackWindow){
+    reactToParentSizeChange(newX: number, newY: number, parentHeight: number, parentWidth: number) {
+        var newHeight: number, newWidth: number;
+        if (this instanceof SwitchbackWindow) {
             newHeight = parentHeight;
             newWidth = parentWidth;
-        }else{
+        } else {
             const resizedWidget = super.reactToParentSizeChange(newX, newY, parentHeight, parentWidth);
             newHeight = resizedWidget.newHeight;
             newWidth = resizedWidget.newWidth;
@@ -352,14 +352,14 @@ export class SwitchbackGroup extends SwitchbackWidget {
         const childrenHeight = newHeight - (this.padding.getTop() + this.padding.getBottom());
         const childrenWidth = newWidth - (this.padding.getLeft() + this.padding.getRight());
 
-        if(this.children){
+        if (this.children) {
             var sequenceX = newX + this.padding.getLeft();
             var sequenceY = newY + this.padding.getTop();
             this.children.forEach(child => {
                 const newChildSize = child.reactToParentSizeChange(sequenceX, sequenceY, childrenHeight, childrenWidth);
-                if(this.direction === "HORIZONTAL"){
+                if (this.direction === "HORIZONTAL") {
                     sequenceX += newChildSize.newWidth;
-                }else{
+                } else {
                     sequenceY += newChildSize.newHeight;
                 }
             });
@@ -375,7 +375,7 @@ export class SwitchbackGroup extends SwitchbackWidget {
 /**
  * Defines the props used to create a SwitchbackWindow.
  */
-export interface SwitchbackWindowProps extends WindowDesc{
+export interface SwitchbackWindowProps extends WindowDesc {
     /**
      * Initial direction of the window. All groups added to this window will sequence in this direction.
      * 
@@ -386,7 +386,7 @@ export interface SwitchbackWindowProps extends WindowDesc{
     padding?: BoundingBox;
 }
 
-export class SwitchbackWindow extends SwitchbackGroup{
+export class SwitchbackWindow extends SwitchbackGroup {
     base: Window;
 
     children: SwitchbackGroup[];
@@ -395,16 +395,16 @@ export class SwitchbackWindow extends SwitchbackGroup{
 
     private thisWindowDesc: WindowDesc;
 
-    constructor(props: SwitchbackWindowProps){
-        const superProps:SwitchbackGroupProps = {
+    constructor(props: SwitchbackWindowProps) {
+        const superProps: SwitchbackGroupProps = {
             direction: props.direction || "VERTICAL",
             width: props.width,
             height: props.height,
-            padding: props.padding || new BoundingBox({top: 16, bottom: 16, left: 4, right: 4})
+            padding: props.padding || new BoundingBox({ top: 16, bottom: 16, left: 4, right: 4 })
         };
         super(superProps);
-        
-        this.theirOnUpdate = props.onUpdate || (() => {});
+
+        this.theirOnUpdate = props.onUpdate || (() => { });
         props.onUpdate = this.onWindowUpdate.bind(this);
 
         this.thisWindowDesc = props;
@@ -415,17 +415,17 @@ export class SwitchbackWindow extends SwitchbackGroup{
      * @param child The SwitchbackGroup to add
      * @returns The SwitchbackWindow, allowing for chaining
      */
-    addChild(child: SwitchbackGroup){
+    addChild(child: SwitchbackGroup) {
         return super.addChild(child);
     }
 
-    addChildren(children: SwitchbackGroup[]){
+    addChildren(children: SwitchbackGroup[]) {
         return super.addChildren(children);
     }
 
-    private onWindowUpdate(){
-        if(this.base){
-            if(this.base.width !== this.baseWidth || this.base.height !== this.baseHeight){
+    private onWindowUpdate() {
+        if (this.base) {
+            if (this.base.width !== this.baseWidth || this.base.height !== this.baseHeight) {
                 this.baseWidth = this.base.width;
                 this.baseHeight = this.base.height;
                 this.apply();
@@ -434,25 +434,25 @@ export class SwitchbackWindow extends SwitchbackGroup{
         }
     }
 
-    getChildrenFlat(){
+    getChildrenFlat() {
         return this.getChildrenFlatRecurse(this.children);
     }
 
-    private getChildrenFlatRecurse(children: SwitchbackObject[]){
+    private getChildrenFlatRecurse(children: SwitchbackObject[]) {
         const result: SwitchbackObject[] = [];
         children.forEach(child => {
             result.push(child);
-            if(child instanceof SwitchbackGroup && child.children){
+            if (child instanceof SwitchbackGroup && child.children) {
                 result.push(...this.getChildrenFlatRecurse(child.children));
             }
         });
         return result;
     }
 
-    open(){
-        if(this.base){
+    open() {
+        if (this.base) {
             this.base.bringToFront();
-        }else{
+        } else {
             const newChildren = this.getChildrenFlat();
             this.base = ui.openWindow({
                 ...this.thisWindowDesc,
@@ -467,17 +467,17 @@ export class SwitchbackWindow extends SwitchbackGroup{
         }
     }
 
-    close(){
-        if(this.base){
+    close() {
+        if (this.base) {
             this.base.close();
             this.base = null;
         }
     }
 
-    apply(){
-        if(!this.base){
+    apply() {
+        if (!this.base) {
             this.open();
-        }else{
+        } else {
             super.reactToParentSizeChange(0, 0, this.baseHeight, this.baseWidth);
         }
     }
@@ -490,7 +490,7 @@ const defaultWidgetSize = {
     y: 0,
 }
 
-export function createButton(title: string, name?: string){
+export function createButton(title: string, name?: string) {
     return <ButtonWidget>{
         type: "button",
         text: title,
@@ -499,7 +499,7 @@ export function createButton(title: string, name?: string){
     }
 }
 
-export function createCheckbox(text?: string, name?: string){
+export function createCheckbox(text?: string, name?: string) {
     return <CheckboxWidget>{
         type: "checkbox",
         text: text,
@@ -508,7 +508,7 @@ export function createCheckbox(text?: string, name?: string){
     }
 }
 
-export function createColorPicker(color?: number, name?: string){
+export function createColorPicker(color?: number, name?: string) {
     return <ColourPickerWidget>{
         type: "colourpicker",
         colour: color,
@@ -517,7 +517,7 @@ export function createColorPicker(color?: number, name?: string){
     }
 }
 
-export function createDropDown(items?: string[], selectedIndex?: number, name?: string){
+export function createDropDown(items?: string[], selectedIndex?: number, name?: string) {
     return <DropdownWidget>{
         type: "dropdown",
         items: items,
@@ -527,7 +527,7 @@ export function createDropDown(items?: string[], selectedIndex?: number, name?: 
     }
 }
 
-export function createGroupBox(text?: string, name?: string){
+export function createGroupBox(text?: string, name?: string) {
     return <GroupBoxWidget>{
         type: "groupbox",
         text: text,
@@ -536,7 +536,7 @@ export function createGroupBox(text?: string, name?: string){
     }
 }
 
-export function createLabel(text?: string, textAlign?: TextAlignment, name?: string){
+export function createLabel(text?: string, textAlign?: TextAlignment, name?: string) {
     return <LabelWidget>{
         type: "label",
         text: text,
@@ -546,7 +546,7 @@ export function createLabel(text?: string, textAlign?: TextAlignment, name?: str
     }
 }
 
-export function createListView(scrollbars?: ScrollbarType, isStriped?: boolean, showColumnHeaders?: boolean, columns?: ListViewColumn[], items?: string[] | ListViewItem[], selectedCell?: RowColumn, canSelect?: boolean, name?: string){
+export function createListView(scrollbars?: ScrollbarType, isStriped?: boolean, showColumnHeaders?: boolean, columns?: ListViewColumn[], items?: string[] | ListViewItem[], selectedCell?: RowColumn, canSelect?: boolean, name?: string) {
     return <ListView>{
         type: "listview",
         scrollbars: scrollbars,
@@ -561,7 +561,7 @@ export function createListView(scrollbars?: ScrollbarType, isStriped?: boolean, 
     }
 }
 
-export function createSpinner(text?: string, name?: string){
+export function createSpinner(text?: string, name?: string) {
     return <SpinnerWidget>{
         type: "spinner",
         text: text,
@@ -570,7 +570,7 @@ export function createSpinner(text?: string, name?: string){
     }
 }
 
-export function createTextBox(text?: string, name?: string){
+export function createTextBox(text?: string, name?: string) {
     return <TextBoxWidget>{
         type: "textbox",
         text: text,
@@ -579,7 +579,7 @@ export function createTextBox(text?: string, name?: string){
     }
 }
 
-export function createViewport(viewport?: Viewport, name?: string){
+export function createViewport(viewport?: Viewport, name?: string) {
     return <ViewportWidget>{
         type: "viewport",
         viewport: viewport,

@@ -152,7 +152,7 @@ function main(){
                 width: "100%"
             })
                 .addChild(new SwitchbackUI.SwitchbackWidget({
-                    base: SwitchbackUI.createColorPicker(0xFF00FF),
+                    base: SwitchbackUI.createColorPicker(27),
                     height: 16,
                     width: 16
                 }))

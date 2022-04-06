@@ -104,6 +104,8 @@ export class SwitchbackWidget{
      */
     base?: Widget | Window;
 
+    private windowBase: Widget | Window;
+
     /**
      * String representing the name of the Widget.
      * If this Widget wraps a valid OpenRCT2 widget, these names should match.
@@ -219,16 +221,19 @@ export class SwitchbackWidget{
     }
 
     getWidget(){
-        if(!this.parentWindow){
-            throw Error("Could not get widget: widget has not been assigned to a window.");
+        if(!this.windowBase){
+            if(!this.parentWindow){
+                throw Error("Could not get widget: widget has not been assigned to a window.");
+            }
+            if(!this.base){
+                throw Error("Could not get widget: has not been initialized.");
+            }
+            if(!this.name){
+                throw Error("Could not get widget: widget needs a name to be found.");
+            }
+            this.windowBase = this.parentWindow.findWidget(this.name);
         }
-        if(!this.base){
-            throw Error("Could not get widget: has not been initialized.");
-        }
-        if(!this.name){
-            throw Error("Could not get widget: widget needs a name to be found.");
-        }
-        return this.parentWindow.findWidget(this.name);
+        return this.windowBase;
     }
 
     changeWidgetSize(x: number, y: number, height: number, width: number){

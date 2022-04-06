@@ -5,7 +5,6 @@
         "esModuleInterop": true,
         "lib": ["ES5"],
         "jsx": "react",
-        "jsxFactory": "SwitchbackJSX",
-        "jsxFragmentFactory": "console.error"
+        "jsxFactory": "SwitchbackJSX"
     }
 }

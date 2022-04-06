@@ -1,9 +1,49 @@
 import * as SwitchbackUI from "./SwitchbackUI";
 
-class BaseElementProps {
-    name?: string
+class SwitchbackRef<Type extends Widget> {
+    private current?: Type;
+    private widget?: SwitchbackUI.SwitchbackWidget;
+
+    constructor() {
+        this.current = null;
+        this.widget = null;
+    }
+
+    setCurrent(next: SwitchbackUI.SwitchbackWidget){
+        this.widget = next;
+    }
+
+    /**
+     * Gets the current object this ref is referring to. Calls "getWidget" on the respective Widget, which returns the Widget directly from the parent Window, allowing for reading & writing.
+     */
+    getCurrent(): Type {
+        if(!this.current){
+            this.current = this.widget.getWidget() as Type;
+        }
+        return this.current;
+    }
 }
 
+/**
+ * Creates a "ref" object, which contains a reference to an Widget after it has been created.
+ * 
+ * The provided type allows TypeScript to understand what the underlying "current" object is.
+ */
+export function createRef<Type extends Widget>() {
+    return new SwitchbackRef<Type>();
+}
+
+function getText(children: any[], textProp?: string) {
+    if ((children.length === 1 && typeof children[0] !== "string") || children.length > 1) {
+        throw new Error("Widget element must only contain at most one text child");
+    }
+    const childText = children[0];
+    return childText || textProp || null;
+}
+
+/**
+ * Creates a new SwitchbackWindow.
+ */
 export function Window(props: SwitchbackUI.SwitchbackWindowProps, children: any[]): SwitchbackUI.SwitchbackWindow {
     const window = new SwitchbackUI.SwitchbackWindow(props);
     if (children) {
@@ -13,140 +53,168 @@ export function Window(props: SwitchbackUI.SwitchbackWindowProps, children: any[
     return window;
 };
 
+
+/**
+ * Creates a new SwitchbackGroup.
+ */
 export function Group(props: SwitchbackUI.SwitchbackGroupProps, children: any[]): SwitchbackUI.SwitchbackGroup {
     const group = new SwitchbackUI.SwitchbackGroup(props);
     if (children) {
-        group.addChildren(children);
+        group.addChildren([].concat(...children));
     }
 
     return group;
 }
 
-export function Widget(props: Omit<SwitchbackUI.SwitchbackWidgetProps, "base">, children: Widget[]): SwitchbackUI.SwitchbackWidget {
-    if (!children || children.length !== 1) {
-        throw new Error("Widget can have only 1 child");
+
+/**
+ * Creates a new SwitchbackWidget.
+ * Unless you're creating the base manually with any of the "createXWidget" methods exported in SwitchbackUI, you probably don't need this.
+ * Create Widgets with the needed base by using the respective TSX tag (ex: <Button>, <Checkbox>)
+ */
+export function Widget(props: Omit<SwitchbackUI.SwitchbackWidgetProps, "base">, children: Widget | Widget[]): SwitchbackUI.SwitchbackWidget {
+    var baseWidget: Widget;
+    if (Array.isArray(children)) {
+        if (children.length !== 1) {
+            throw new Error("Widget can have only 1 child");
+        }
+        baseWidget = children[0]
+    } else {
+        baseWidget = children;
     }
 
     const newWidget = new SwitchbackUI.SwitchbackWidget({
-        base: children[0],
+        base: baseWidget,
         ...props
     });
 
     return newWidget;
 }
 
-class ButtonProps extends BaseElementProps {
-    text?: string
+
+type GroupBoxProps = { text?: string };
+
+/**
+ * Creates a new Group Box without a widget.
+ * 
+ * The main usage for this is to apply as a base to a SwitchbackGroup. It can be created as a SwitchbackWidget by placing it under a <Widget> tag in the hierarchy.
+ * If that is your use case, the <GroupBoxWidget> is a shortcut to that.
+ */
+export function GroupBox(props: GroupBoxProps, children: any[]): Widget {
+    return {
+        ...props,
+        ...defaultWidgetSize,
+        type: "groupbox"
+    } as GroupBoxWidget;
 }
 
-export function Button(props: ButtonProps, children: any): Widget {
-    let text = props.text || "";
-    if (typeof children === "string") {
-        text = children;
-    }
 
-    return SwitchbackUI.createButton(text, props.name);
+const defaultWidgetSize = {
+    height: 16,
+    width: 16,
+    x: 0,
+    y: 0,
+}
+
+type WidgetProps<Type extends Widget> = Omit<Type, "height" | "width" | "x" | "y" | "type"> & Omit<SwitchbackUI.SwitchbackWidgetProps, "base"> & { ref?: SwitchbackRef<any> };
+
+function createWidget<Type extends Widget>(props: WidgetProps<Type>, type: WidgetType): SwitchbackUI.SwitchbackWidget {
+    const newWidget = <Type>{
+        ...props,
+        ...defaultWidgetSize,
+        type
+    };
+    const sbWidget = Widget(props, newWidget);
+    if(props.ref){
+        props.ref.setCurrent(sbWidget);
+    }
+    return sbWidget;
+}
+
+/**
+ * Creates a new SwitchbackWidget with a Button as the base.
+ */
+export function Button(props: WidgetProps<ButtonWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    props.text = getText(children, props.text);
+    return createWidget<ButtonWidget>(props, "button");
 };
 
-class CheckboxProps extends BaseElementProps {
-    text?: string;
+/**
+ * Creates a new SwitchbackWidget with a Checkbox as the base.
+ */
+export function Checkbox(props: WidgetProps<CheckboxWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    props.text = getText(children, props.text);
+    return createWidget<CheckboxWidget>(props, "checkbox");
 }
 
-export function Checkbox(props: CheckboxProps, children: any): Widget {
-    let text = props.text || "";
-    if (typeof children === "string") {
-        text = children;
-    }
-
-    return SwitchbackUI.createCheckbox(text, props.name);
+/**
+ * Creates a new SwitchbackWidget with a ColorPicker as the base.
+ */
+export function ColorPicker(props: WidgetProps<ColourPickerWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<ColourPickerWidget>(props, "colourpicker");
 }
 
-class ColorPickerProps extends BaseElementProps {
-    color?: number;
+/**
+ * Creates a new SwitchbackWidget with a DropDown as the base.
+ */
+export function DropDown(props: WidgetProps<DropdownWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<DropdownWidget>(props, "dropdown");
 }
 
-export function ColorPicker(props: ColorPickerProps, children: any): Widget {
-    return SwitchbackUI.createColorPicker(props.color, props.name);
+/**
+ * Creates a new SwitchbackWidget with a GroupBox as the base.
+ */
+export function GroupBoxWidget(props: WidgetProps<GroupBoxWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<GroupBoxWidget>(props, "groupbox");
 }
 
-class DropDownProps extends BaseElementProps {
-    items?: string[];
-    selectedIndex?: number;
+/**
+ * Creates a new SwitchbackWidget with a Label as the base.
+ */
+export function Label(props: WidgetProps<LabelWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    props.text = getText(children, props.text);
+    return createWidget<LabelWidget>(props, "label");
 }
 
-export function DropDown(props: DropDownProps, children: any): Widget {
-    return SwitchbackUI.createDropDown(props.items, props.selectedIndex, props.name);
+/**
+ * Creates a new SwitchbackWidget with a ListView as the base.
+ */
+ export function ListView(props: WidgetProps<ListView>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<ListView>(props, "listview");
 }
 
-class GroupBoxProps extends BaseElementProps {
-    text?: string;
+/**
+ * Creates a new SwitchbackWidget with a Spinner as the base.
+ */
+ export function Spinner(props: WidgetProps<SpinnerWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<SpinnerWidget>(props, "spinner");
 }
 
-export function GroupBox(props: GroupBoxProps, children: any): Widget {
-    return SwitchbackUI.createGroupBox(props.text, props.name);
+/**
+ * Creates a new SwitchbackWidget with a TextBox as the base.
+ */
+ export function TextBox(props: WidgetProps<TextBoxWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    props.text = getText(children, props.text);
+    return createWidget<TextBoxWidget>(props, "textbox");
 }
 
-class LabelProps extends BaseElementProps {
-    text?: string;
-    textAlign?: TextAlignment;
-}
-
-export function Label(props: LabelProps, children: any): Widget {
-    return SwitchbackUI.createLabel(props.text, props.textAlign, props.name);
-}
-
-class ListViewProps extends BaseElementProps {
-    scrollbars?: ScrollbarType;
-    isStriped?: boolean;
-    showColumnHeaders?: boolean;
-    columns?: ListViewColumn[];
-    items?: string[] | ListViewItem[];
-    selectedCell?: RowColumn;
-    canSelect?: boolean;
-}
-
-export function ListView(props: ListViewProps, children: any): Widget {
-    return SwitchbackUI.createListView(
-        props.scrollbars,
-        props.isStriped,
-        props.showColumnHeaders,
-        props.columns,
-        props.items,
-        props.selectedCell,
-        props.canSelect
-    );
-}
-
-class SpinnerProps extends BaseElementProps {
-    text?: string;
-}
-
-export function Spinner(props: SpinnerProps, children: any): Widget {
-    return SwitchbackUI.createSpinner(props.text, props.name);
-}
-
-class TextBoxProps extends BaseElementProps {
-    text?: string;
-}
-
-export function TextBox(props: TextBoxProps, children: any): Widget {
-    return SwitchbackUI.createTextBox(props.text, props.name);
-}
-
-class ViewportProps extends BaseElementProps {
-    viewport?: Viewport;
-}
-
-export function Viewport(props: ViewportProps, children: any): Widget {
-    return SwitchbackUI.createViewport(props.viewport, props.name);
+/**
+ * Creates a new SwitchbackWidget with a Viewport as the base.
+ */
+ export function Viewport(props: WidgetProps<ViewportWidget>, children: any[]): SwitchbackUI.SwitchbackWidget {
+    return createWidget<ViewportWidget>(props, "viewport");
 }
 
 
 type SwitchbackJSXElement = {
-    (props: BaseElementProps, children?: any[]): any,
+    (props: any, children?: any[]): SwitchbackUI.SwitchbackWidget,
 }
 
-export function SwitchbackJSX(element: SwitchbackJSXElement, props: BaseElementProps, ...children: any[]) {
-    var result = element(props, children);
+/**
+ * Interprets elements provided by TSX, calling the relevant element with the relevant props and children. Provides a Widget that may represent a SwitchbackWidget, SwitchbackGroup, or SwitchbackWindow
+ */
+export function SwitchbackJSX(element: SwitchbackJSXElement, props: any, ...children: any[]): SwitchbackUI.SwitchbackWidget {
+    var flatChildren = children.reduce((prev, curr) => (curr instanceof Array ? [...prev, ...curr] : [...prev, curr]), []) as any[];
+    var result = element(props || {}, flatChildren);
     return result;
 }

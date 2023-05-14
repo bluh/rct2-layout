@@ -372,6 +372,36 @@ export class SwitchbackGroup extends SwitchbackWidget {
     }
 }
 
+export class SwitchbackTab {
+    image: number | ImageAnimation;
+
+    widgets: SwitchbackWidget[];
+
+    constructor(image?: number | ImageAnimation) {
+        this.image = image;
+    }
+
+    /**
+     * Adds a child to this SwitchbackTab
+     * @param child The SwitchbackGroup or SwitchbackWidget to add
+     * @returns The SwitchbackTab, allowing for chaining
+     */
+    addChild(child: SwitchbackObject) {
+        this.widgets.push(child);
+        return this;
+    }
+
+    /**
+     * Adds multiple children to this SwitchbackTab at once
+     * @param children The array of SwitchbackGroups or SwitchbackWidgets to add
+     * @returns The SwitchbackTab, allowing for chaining
+     */
+    addChildren(children: SwitchbackObject[]) {
+        this.widgets.push(...children);
+        return this;
+    }
+}
+
 /**
  * Defines the props used to create a SwitchbackWindow.
  */
@@ -390,6 +420,8 @@ export class SwitchbackWindow extends SwitchbackGroup {
     base: Window;
 
     children: SwitchbackGroup[];
+
+    tabs: SwitchbackTab[];
 
     private theirOnUpdate: () => void;
 
@@ -430,12 +462,22 @@ export class SwitchbackWindow extends SwitchbackGroup {
                 this.baseHeight = this.base.height;
                 this.apply();
             }
-            this.theirOnUpdate && this.theirOnUpdate();
+            this.theirOnUpdate();
         }
     }
 
     getChildrenFlat() {
-        return this.getChildrenFlatRecurse(this.children);
+        if(this.children.length > 0 && this.tabs.length === 0){
+            return this.getChildrenFlatRecurse(this.children);
+        }else if(this.children.length === 0 && this.tabs.length > 0){
+            const result = [];
+            this.tabs.forEach(tab => {
+                tab.widgets && result.push(...this.getChildrenFlatRecurse(tab.widgets));
+            });
+            return result;
+        }else{
+            throw new Error("Window cannot have both children and tabs. Either a window is composed of widgets and groups as children, or tabs as children");
+        }
     }
 
     private getChildrenFlatRecurse(children: SwitchbackObject[]) {

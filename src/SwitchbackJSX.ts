@@ -70,7 +70,7 @@ export function Group(props: SwitchbackUI.SwitchbackGroupProps, children: any[])
 /**
  * Creates a new SwitchbackWidget.
  * Unless you're creating the base manually with any of the "createXWidget" methods exported in SwitchbackUI, you probably don't need this.
- * Create Widgets with the needed base by using the respective TSX tag (ex: <Button>, <Checkbox>)
+ * Create Widgets with the needed base by using the respective TSX tag (ex: \<Button\>, \<Checkbox\>)
  */
 export function Widget(props: Omit<SwitchbackUI.SwitchbackWidgetProps, "base">, children: Widget | Widget[]): SwitchbackUI.SwitchbackWidget {
     var baseWidget: Widget;

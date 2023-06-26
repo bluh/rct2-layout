@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "demo": "webpack --config demo/webpack.config.js --env production",
     "demo-dev": "webpack --config demo/webpack.config.js",
+    "demo-tabs": "webpack --config demo/webpack.config.js --env production --entry ./demo/demo2.ts",
+    "demo-tabs-dev": "webpack --config demo/webpack.config.js --entry ./demo/demo2.ts",
     "demo-jsx": "webpack --config demo/webpack.config.js --entry ./demo/demo-jsx.tsx"
   },
   "author": "Joseph Faraci",

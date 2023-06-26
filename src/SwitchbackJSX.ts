@@ -16,7 +16,10 @@ class SwitchbackRef<Type extends Widget> {
     /**
      * Gets the current object this ref is referring to. Calls "getWidget" on the respective Widget, which returns the Widget directly from the parent Window, allowing for reading & writing.
      */
-    getCurrent(): Type {
+    getCurrent(): Type | null {
+        if(!this.widget){
+            return null;
+        }
         if (!this.current) {
             this.current = this.widget.getWidget() as Type;
         }

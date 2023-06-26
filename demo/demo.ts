@@ -45,6 +45,8 @@ function main() {
 
     const gBox5 = SwitchbackUI.createGroupBox("Widgets:");
 
+    const gBox6 = SwitchbackUI.createGroupBox("Empty Box");
+
     console.log('Creating Layout');
 
     newWindow.addChildren([
@@ -191,6 +193,12 @@ function main() {
                 base: SwitchbackUI.createViewport(ui.mainViewport),
                 height: 30,
                 width: "100%"
+            }))
+            .addChild(new SwitchbackUI.SwitchbackGroup({
+                direction: "VERTICAL",
+                height: 60,
+                width: "100%",
+                base: gBox6
             }))
     ]);
 
